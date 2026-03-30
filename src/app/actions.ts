@@ -91,13 +91,16 @@ async function getLocationFromForm(locationId: string | null) {
 
 async function getNextAssetCodeUsingAdmin() {
   const supabase = getSupabaseAdminOrThrow();
-  const { data, error } = await supabase
+  const { data, error } = (await supabase
     .from("assets")
     .select("asset_code")
     .like("asset_code", "LOG-%")
     .order("asset_code", { ascending: false })
     .limit(1)
-    .maybeSingle();
+    .maybeSingle()) as {
+    data: { asset_code: string } | null;
+    error: { message: string } | null;
+  };
 
   if (error) {
     throw new Error(error.message);
