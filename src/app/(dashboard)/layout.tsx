@@ -1,4 +1,7 @@
 import type { ReactNode } from "react";
+
+export const dynamic = "force-dynamic";
+
 import { RouteScrollReset } from "@/components/dashboard/route-scroll-reset";
 import { Sidebar } from "@/components/dashboard/sidebar";
 
