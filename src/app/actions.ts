@@ -130,7 +130,7 @@ export async function createTeamMemberAction(formData: FormData) {
     qr_value: qrValue,
   };
 
-  const { error } = await supabase.from("profiles").insert(profileInsert);
+  const { error } = await supabase.from("profiles").insert([profileInsert]);
 
   if (error) {
     throw new Error(error.message);
@@ -153,7 +153,7 @@ export async function createLocationAction(formData: FormData) {
     description,
   };
 
-  const { error } = await supabase.from("store_locations").insert(locationInsert);
+  const { error } = await supabase.from("store_locations").insert([locationInsert]);
 
   if (error) {
     throw new Error(error.message);
@@ -200,7 +200,7 @@ export async function createAssetAction(formData: FormData) {
 
     const { data: insertedAsset, error } = await supabase
       .from("assets")
-      .insert(assetInsert)
+      .insert([assetInsert])
       .select("id")
       .single();
 
@@ -231,7 +231,7 @@ export async function createAssetAction(formData: FormData) {
     location: location?.name ?? null,
   };
 
-  await supabase.from("asset_logs").insert(assetCreatedLogInsert);
+  await supabase.from("asset_logs").insert([assetCreatedLogInsert]);
 
   revalidatePath("/");
   revalidatePath("/assets");
@@ -303,7 +303,7 @@ export async function submitScanAction(
       location: location?.name ?? null,
     };
 
-    const { error: logError } = await supabase.from("asset_logs").insert(assetLogInsert);
+    const { error: logError } = await supabase.from("asset_logs").insert([assetLogInsert]);
 
     if (logError) {
       return {
