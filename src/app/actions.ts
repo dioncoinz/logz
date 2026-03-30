@@ -103,12 +103,10 @@ async function getNextAssetCodeUsingAdmin() {
     throw new Error(result.error.message);
   }
 
+  const latestAsset = result.data as { asset_code?: string } | null;
   const latestAssetCode =
-    result.data &&
-    typeof result.data === "object" &&
-    "asset_code" in result.data &&
-    typeof result.data.asset_code === "string"
-      ? result.data.asset_code
+    latestAsset && typeof latestAsset.asset_code === "string"
+      ? latestAsset.asset_code
       : formatAssetCode(0);
 
   return formatAssetCode(parseAssetCode(latestAssetCode) + 1);
