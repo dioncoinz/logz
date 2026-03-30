@@ -1,4 +1,6 @@
-﻿import { LocationForm } from "@/components/dashboard/location-form";
+export const dynamic = "force-dynamic";
+
+import { LocationForm } from "@/components/dashboard/location-form";
 import { PageHeader } from "@/components/dashboard/page-header";
 
 export default function NewLocationPage() {
