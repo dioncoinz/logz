@@ -91,22 +91,27 @@ async function getLocationFromForm(locationId: string | null) {
 
 async function getNextAssetCodeUsingAdmin() {
   const supabase = getSupabaseAdminOrThrow();
-  const { data, error } = (await supabase
+  const result = await supabase
     .from("assets")
     .select("asset_code")
     .like("asset_code", "LOG-%")
     .order("asset_code", { ascending: false })
     .limit(1)
-    .maybeSingle()) as {
-    data: { asset_code: string } | null;
-    error: { message: string } | null;
-  };
+    .maybeSingle();
 
-  if (error) {
-    throw new Error(error.message);
+  if (result.error) {
+    throw new Error(result.error.message);
   }
 
-  return formatAssetCode(parseAssetCode(data?.asset_code ?? formatAssetCode(0)) + 1);
+  const latestAssetCode =
+    result.data &&
+    typeof result.data === "object" &&
+    "asset_code" in result.data &&
+    typeof result.data.asset_code === "string"
+      ? result.data.asset_code
+      : formatAssetCode(0);
+
+  return formatAssetCode(parseAssetCode(latestAssetCode) + 1);
 }
 
 export async function createTeamMemberAction(formData: FormData) {
