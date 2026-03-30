@@ -10,8 +10,12 @@ import { createAdminClient } from "@/lib/supabase/server";
 import type {
   AssetAction,
   AssetCategory,
+  AssetInsert,
+  AssetLogInsert,
   AssetStatus,
+  ProfileInsert,
   StoreLocation,
+  StoreLocationInsert,
 } from "@/types/database";
 
 export type FormState = {
@@ -119,12 +123,14 @@ export async function createTeamMemberAction(formData: FormData) {
   const id = crypto.randomUUID();
   const qrValue = generateProfileQrValue(id);
 
-  const { error } = await supabase.from("profiles").insert({
+  const profileInsert: ProfileInsert = {
     id,
     full_name: fullName,
     role,
     qr_value: qrValue,
-  });
+  };
+
+  const { error } = await supabase.from("profiles").insert(profileInsert);
 
   if (error) {
     throw new Error(error.message);
@@ -141,11 +147,13 @@ export async function createLocationAction(formData: FormData) {
   const locationCode = getRequiredString(formData, "location_code");
   const description = getOptionalString(formData, "description");
 
-  const { error } = await supabase.from("store_locations").insert({
+  const locationInsert: StoreLocationInsert = {
     name,
     location_code: locationCode,
     description,
-  });
+  };
+
+  const { error } = await supabase.from("store_locations").insert(locationInsert);
 
   if (error) {
     throw new Error(error.message);
@@ -176,21 +184,23 @@ export async function createAssetAction(formData: FormData) {
   let nextCode = await getNextAssetCodeUsingAdmin();
 
   for (let attempt = 0; attempt < 5; attempt += 1) {
+    const assetInsert: AssetInsert = {
+      asset_code: nextCode,
+      name,
+      category,
+      description,
+      purchase_date: purchaseDate,
+      cost,
+      current_status: "IN",
+      current_holder: null,
+      current_location: location?.name ?? null,
+      location_id: location?.id ?? null,
+      qr_value: qrValue,
+    };
+
     const { data: insertedAsset, error } = await supabase
       .from("assets")
-      .insert({
-        asset_code: nextCode,
-        name,
-        category,
-        description,
-        purchase_date: purchaseDate,
-        cost,
-        current_status: "IN",
-        current_holder: null,
-        current_location: location?.name ?? null,
-        location_id: location?.id ?? null,
-        qr_value: qrValue,
-      })
+      .insert(assetInsert)
       .select("id")
       .single();
 
@@ -212,14 +222,16 @@ export async function createAssetAction(formData: FormData) {
     throw lastError ?? new Error("Unable to allocate a unique asset code.");
   }
 
-  await supabase.from("asset_logs").insert({
+  const assetCreatedLogInsert: AssetLogInsert = {
     asset_id: data.id,
     action: "IN",
     scanned_by: null,
     scanned_by_name: "Asset Register",
     note: "Asset created and available for issue.",
     location: location?.name ?? null,
-  });
+  };
+
+  await supabase.from("asset_logs").insert(assetCreatedLogInsert);
 
   revalidatePath("/");
   revalidatePath("/assets");
@@ -282,14 +294,16 @@ export async function submitScanAction(
       };
     }
 
-    const { error: logError } = await supabase.from("asset_logs").insert({
+    const assetLogInsert: AssetLogInsert = {
       asset_id: assetId,
       action,
       scanned_by: scannedById,
       scanned_by_name: scannedByName,
       note,
       location: location?.name ?? null,
-    });
+    };
+
+    const { error: logError } = await supabase.from("asset_logs").insert(assetLogInsert);
 
     if (logError) {
       return {
