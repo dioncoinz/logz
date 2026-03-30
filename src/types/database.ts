@@ -1,3 +1,11 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
+
 export type AssetCategory =
   | "Tool"
   | "Equipment"
@@ -34,6 +42,7 @@ export type Database = {
           qr_value?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       store_locations: {
         Row: {
@@ -57,6 +66,7 @@ export type Database = {
           description?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       assets: {
         Row: {
@@ -107,6 +117,15 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "assets_location_id_fkey";
+            columns: ["location_id"];
+            isOneToOne: false;
+            referencedRelation: "store_locations";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       asset_logs: {
         Row: {
@@ -139,8 +158,28 @@ export type Database = {
           location?: string | null;
           created_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: "asset_logs_asset_id_fkey";
+            columns: ["asset_id"];
+            isOneToOne: false;
+            referencedRelation: "assets";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "asset_logs_scanned_by_fkey";
+            columns: ["scanned_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
 };
 
